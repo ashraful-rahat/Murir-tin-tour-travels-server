@@ -1,0 +1,30 @@
+tour and travel project analysis
+user 
+tour
+location
+tour bookings
+tour review
+
+collection
+
+user collection
+{
+    name:'rahat'
+review :{
+    [
+        review: good,
+        rating: good
+    ]
+}
+bookings:{
+    [
+      tourBooking : cox bazar
+    ]
+}
+}
+tour collection
+{
+    location :[
+        tourName: st cox bazar
+    ]
+}
