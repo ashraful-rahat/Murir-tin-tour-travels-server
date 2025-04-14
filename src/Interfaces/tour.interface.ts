@@ -12,3 +12,5 @@ interface ITour {
   location: string[];
   slug: string;
 }
+
+export { ITour };
