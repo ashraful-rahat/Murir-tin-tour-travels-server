@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "watch": "tsc --watch",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only --require dotenv/config src/server.ts",
     "lint": "eslint src --ext .ts",
