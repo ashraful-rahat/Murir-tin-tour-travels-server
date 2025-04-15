@@ -6,11 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const express_1 = __importDefault(require("express"));
+const user_route_1 = require("./routes/user.route");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+app.use("/api/v1/users", user_route_1.userRoutes);
+console.log(user_route_1.userRoutes);
 app.get("/", (req, res) => {
     res.status(200).json({
         status: "success",
