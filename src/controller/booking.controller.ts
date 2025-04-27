@@ -22,12 +22,12 @@ const createBooking = async (req: Request, res: Response) => {
 
 const allBookings = async (req: Request, res: Response) => {
   try {
-    const result = await bookingServices.allBookings();
+    const result = await bookingServices.allBookings(); // No need to manually populate
 
     res.status(200).json({
       status: "success",
       message: "Bookings fetched Successfully",
-      data: result,
+      data: result, // 'tourDetails' will be populated automatically here
     });
   } catch (error: any) {
     console.log(error);
@@ -37,7 +37,6 @@ const allBookings = async (req: Request, res: Response) => {
     });
   }
 };
-
 const getSingleBooking = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
