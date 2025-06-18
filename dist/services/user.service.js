@@ -14,10 +14,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userServices = void 0;
 const user_model_1 = __importDefault(require("../models/user.model"));
-const createUserFromServices = (userData) => __awaiter(void 0, void 0, void 0, function* () {
+const createUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_model_1.default.create(userData);
     return result;
 });
+const allUser = () => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_model_1.default.find();
+    return result;
+});
+const getSingleUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_model_1.default.findById(id);
+    return result;
+});
+const updateUser = (id, userData) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_model_1.default.findByIdAndUpdate(id, userData, {
+        new: true,
+        runValidators: true,
+    });
+    return result;
+});
+const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_model_1.default.findByIdAndDelete(id);
+    return result;
+});
 exports.userServices = {
-    createUserFromServices,
+    createUser,
+    allUser,
+    getSingleUser,
+    updateUser,
+    deleteUser,
 };

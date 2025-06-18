@@ -1,97 +1,121 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { userServices } from "../services/user.service";
+import { StatusCodes } from "http-status-codes";
+import { IUser } from "../Interfaces/user.interface";
 
-const createUser = async (req: Request, res: Response) => {
+const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userData = req.body;
-    const result = await userServices.createUser(userData);
-
-    res.status(201).json({
+    const result = await userServices.createUser(req.body);
+    res.status(StatusCodes.CREATED).json({
       status: "success",
-      message: "User created Successfully",
+      message: "User created successfully",
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.code === 11000) {
+      res.status(StatusCodes.CONFLICT).json({
+        status: "fail",
+        message: "Email already exists",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const allUser = async (req: Request, res: Response) => {
+const allUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await userServices.allUser();
-
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "User fetch Successfully",
+      results: result.length,
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    next(error);
   }
 };
 
-const getSingleUser = async (req: Request, res: Response) => {
+const getSingleUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const result = await userServices.getSingleUser(id);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: " Single User fetch  Successfully",
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.name === 'CastError') {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        status: "fail",
+        message: "Invalid user ID format",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const updateUser = async (req: Request, res: Response) => {
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userData = req.body;
-    const id = req.params.id;
-    await userServices.updateUser(id, userData);
+    const { id } = req.params;
+    const userData: Partial<IUser> = req.body;
+    const result = await userServices.updateUser(id, userData);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "User update Successfully",
+      message: "User updated successfully",
+      data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.code === 11000) {
+      res.status(StatusCodes.CONFLICT).json({
+        status: "fail",
+        message: "Email already exists",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
+const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const result = await userServices.deleteUser(id);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "User Deleted Successfully",
-      data: result,
+      message: "User deleted successfully",
+      data: null,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    next(error);
   }
 };
 
