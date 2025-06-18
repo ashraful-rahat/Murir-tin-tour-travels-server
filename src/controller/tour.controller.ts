@@ -1,97 +1,121 @@
-import { Request, Response } from "express";
+// src/controller/tour.controller.ts
+import { Request, Response, NextFunction } from "express";
 import { tourServices } from "../services/tour.service";
+import { StatusCodes } from "http-status-codes";
+import { ITour } from "../Interfaces/tour.interface";
 
-const createTour = async (req: Request, res: Response) => {
+const createTour = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tourData = req.body;
-    const result = await tourServices.createTour(tourData);
-
-    res.status(201).json({
+    const result = await tourServices.createTour(req.body);
+    res.status(StatusCodes.CREATED).json({
       status: "success",
-      message: "Tour created Successfully",
+      message: "Tour created successfully",
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.code === 11000) {
+      res.status(StatusCodes.CONFLICT).json({
+        status: "fail",
+        message: "Tour with this name already exists",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const allTours = async (req: Request, res: Response) => {
+const allTours = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await tourServices.allTours();
-
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Tours fetched Successfully",
+      results: result.length,
       data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getSingleTour = async (req: Request, res: Response) => {
+const getSingleTour = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const result = await tourServices.getSingleTour(id);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "Tour not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Single Tour fetched Successfully",
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.name === 'CastError') {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        status: "fail",
+        message: "Invalid tour ID format",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const updateTour = async (req: Request, res: Response) => {
+const updateTour = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tourData = req.body;
-    const id = req.params.id;
-    await tourServices.updateTour(id, tourData);
+    const { id } = req.params;
+    const result = await tourServices.updateTour(id, req.body);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "Tour not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Tour updated Successfully",
+      message: "Tour updated successfully",
+      data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.code === 11000) {
+      res.status(StatusCodes.CONFLICT).json({
+        status: "fail",
+        message: "Tour with this name already exists",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const deleteTour = async (req: Request, res: Response) => {
+const deleteTour = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const result = await tourServices.deleteTour(id);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "Tour not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Tour deleted Successfully",
-      data: result,
+      message: "Tour deleted successfully",
+      data: null,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
