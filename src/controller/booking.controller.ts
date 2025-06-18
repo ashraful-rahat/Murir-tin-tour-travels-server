@@ -1,96 +1,74 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { bookingServices } from "../services/booking.service";
 
-const createBooking = async (req: Request, res: Response) => {
+const createBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bookingData = req.body;
     const result = await bookingServices.createBooking(bookingData);
 
     res.status(201).json({
       status: "success",
-      message: "Booking created Successfully",
+      message: "Booking created successfully",
       data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error); // Better error delegation
   }
 };
 
-const allBookings = async (req: Request, res: Response) => {
+const allBookings = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await bookingServices.allBookings(); // No need to manually populate
-
+    const result = await bookingServices.allBookings();
     res.status(200).json({
       status: "success",
-      message: "Bookings fetched Successfully",
-      data: result, // 'tourDetails' will be populated automatically here
+      message: "All bookings fetched successfully",
+      data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
-const getSingleBooking = async (req: Request, res: Response) => {
+
+const getSingleBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const result = await bookingServices.getSingleBooking(id);
-
     res.status(200).json({
       status: "success",
-      message: "Single Booking fetched Successfully",
+      message: "Booking fetched successfully",
       data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
-const updateBooking = async (req: Request, res: Response) => {
+const updateBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const bookingData = req.body;
     const id = req.params.id;
-    await bookingServices.updateBooking(id, bookingData);
-
+    const bookingData = req.body;
+    const result = await bookingServices.updateBooking(id, bookingData);
     res.status(200).json({
       status: "success",
-      message: "Booking updated Successfully",
+      message: "Booking updated successfully",
+      data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
-const deleteBooking = async (req: Request, res: Response) => {
+const deleteBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const result = await bookingServices.deleteBooking(id);
-
     res.status(200).json({
       status: "success",
-      message: "Booking deleted Successfully",
+      message: "Booking deleted successfully",
       data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 

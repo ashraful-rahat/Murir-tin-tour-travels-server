@@ -1,97 +1,129 @@
-import { Request, Response } from "express";
+// src/controller/review.controller.ts
+import { Request, Response, NextFunction } from "express";
 import { reviewServices } from "../services/review.service";
+import { StatusCodes } from "http-status-codes";
 
-const createReview = async (req: Request, res: Response) => {
+const createReview = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const reviewData = req.body;
-    const result = await reviewServices.createReview(reviewData);
+    const result = await reviewServices.createReview(req.body);
 
-    res.status(201).json({
+    res.status(StatusCodes.CREATED).json({
       status: "success",
-      message: "Review created Successfully",
+      message: "Review created successfully",
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.name === "ValidationError") {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        status: "fail",
+        message: "Invalid review data",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const allReviews = async (req: Request, res: Response) => {
+const allReviews = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await reviewServices.allReviews();
 
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Reviews fetched Successfully",
+      results: result.length,
       data: result,
     });
-  } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getSingleReview = async (req: Request, res: Response) => {
+const getSingleReview = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const result = await reviewServices.getSingleReview(id);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "Review not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Single Review fetched Successfully",
       data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.name === 'CastError') {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        status: "fail",
+        message: "Invalid review ID format",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const updateReview = async (req: Request, res: Response) => {
+const updateReview = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const reviewData = req.body;
-    const id = req.params.id;
-    await reviewServices.updateReview(id, reviewData);
+    const { id } = req.params;
+    const result = await reviewServices.updateReview(id, req.body);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "Review not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Review updated Successfully",
+      message: "Review updated successfully",
+      data: result,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.name === 'CastError') {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        status: "fail",
+        message: "Invalid review ID format",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
-const deleteReview = async (req: Request, res: Response) => {
+const deleteReview = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const result = await reviewServices.deleteReview(id);
 
-    res.status(200).json({
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        status: "fail",
+        message: "Review not found",
+      });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Review deleted Successfully",
-      data: result,
+      message: "Review deleted successfully",
+      data: null,
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      message: error.message || "Something went wrong",
-    });
+    if (error.name === 'CastError') {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        status: "fail",
+        message: "Invalid review ID format",
+      });
+      return;
+    }
+    next(error);
   }
 };
 
